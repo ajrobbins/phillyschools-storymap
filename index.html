@@ -4,13 +4,28 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.orange-indigo.min.css">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
   </head>
   <body>
     <!--Sidebar-->
     <div class="sidebar">
-      <h1>Philadelphia Schools</h1>
-      <button class="button" id="button1">Previous</button>
-      <button class="button" id="button2">Next</button>
+      <h2 class="mdl-color-text--white">Philadelphia Schools</h2>
+      <div id="sidebar-text" class="mdl-color-text--white">
+        <h4 id="slide-text">Philadelphia has the eighth-largest school district, by
+                            enrollment, in the country. Click <i class="material-icons">arrow_forward</i> to learn more about
+                            Philadelphia schools.
+        </h4>
+      </div>
+      <div class="buttons">
+        <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored" id="btn-prev">
+          <i class="material-icons">arrow_back</i>
+        </button>
+        <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored" id="btn-next">
+          <i class="material-icons">arrow_forward</i>
+        </button>
+      </div>
     </div>
     <!-- Map -->
     <div id="map" class="map"></div>
