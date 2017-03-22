@@ -12,7 +12,7 @@ var Stamen_TonerLite = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{
 }).addTo(map);
 
 
-//plot markers
+//add data to map
 $.ajax("https://gist.githubusercontent.com/ajrobbins/4ce891612ee792676bba3dd52a62be12/raw/2483c11b0a92ba3b3e98cca6bbd17ff9e6958944/schools.geojson").done(function(ajaxResponseValue) {
   var parsedData = JSON.parse(ajaxResponseValue);
   data = parsedData;
@@ -27,6 +27,30 @@ $.ajax("https://gist.githubusercontent.com/ajrobbins/4ce891612ee792676bba3dd52a6
     fillOpacity: 1
   };
 
+  $(function() {
+    $('#btn-prev').on('click', function() {
+      state.slideNumber=state.slideNumber-1; //count will decrease by one on button click
+      console.log(state.slideNumber);
+      slideOne();
+      slideTwo();
+      slideThree();
+      slideFour();
+      slideFive();
+    });
+  });
+
+  $(function() {
+    $('#btn-next').on('click', function() {
+      state.slideNumber=state.slideNumber+1; //count will increase by one on button click
+      console.log(state.slideNumber);
+      slideOne();
+      slideTwo();
+      slideThree();
+      slideFour();
+      slideFive();
+      });
+    });
+});
 
 //Alternate icon
   var selectedIcon = L.icon({
@@ -36,17 +60,8 @@ $.ajax("https://gist.githubusercontent.com/ajrobbins/4ce891612ee792676bba3dd52a6
     // popupAnchor: [-3, -76],
   });
 
-//change to alternate icon
-  var changeIcon = function () {
-  map.removeLayer(featureGroup);
-  L.geoJSON(data, {
-      pointToLayer: function (feature, latlng) {
-          return L.marker(latlng,{icon: selectedIcon});
-      }
-  }).addTo(map);
-  };
 
-//filter function
+//filter by school type
   var filter = function (type) {
   filteredLayer = L.geoJSON(data, {
     filter: function(feature, layer) {
@@ -55,7 +70,31 @@ $.ajax("https://gist.githubusercontent.com/ajrobbins/4ce891612ee792676bba3dd52a6
   }).addTo(map);
   };
 
+ //filter by school name
+ var nameFilter = function (name) {
+ nameLayer = L.geoJSON(data, {
+   filter: function(feature, layer) {
+     return feature.properties.FACIL_NAME==name;
+   }
+ }).addTo(map);
+ };
 
+
+//create popup at Vare-Washington
+  function createPopup(feature, layer) {
+    if (feature.properties.FACIL_NAME=="Washington, George (EL)") {
+      pop=layer.bindPopup("George Washington School, closed in 2013, had been in operation since the Civil War period. Its facility now houses Vare-Washington School.");
+      map.setView([39.933455, -75.152622], 15);
+    }
+  }
+
+//add popup to map
+  var popLayer = function () {
+    popupLayer = L.geoJSON(data, {
+    onEachFeature: createPopup
+  }).addTo(map);
+  pop.openPopup();
+};
 //Create state - 5 slides
 var state = {
   slideNumber:1,
@@ -65,7 +104,12 @@ var state = {
 //Slide one
 var slideOne = function (){
   if (state.slideNumber==1) {
+    document.getElementById("btn-prev").style.visibility = "hidden"; //hide Previous button on first screen (only works on return)
     $("#slide-text").text("The School District of Philadelphia is the eighth largest school district in the nation, by enrollment.");
+    if (filteredLayer!==undefined) {
+      map.removeLayer(filteredLayer);
+      slideOneData = L.geoJson(data).addTo(map);
+    }
   }
 };
 
@@ -73,8 +117,13 @@ var slideOne = function (){
 var slideTwo = function (){
   if (state.slideNumber==2) {
     $("#slide-text").text("There are 220 public schools in the district.");
-    map.removeLayer(featureGroup);
-    filter("District");
+    if (featureGroup !== undefined) {
+      map.removeLayer(featureGroup);
+      filter("District");
+    }
+    else if (filteredLayer===undefined) {
+      map.removeLayer(slideOneData);
+    }
   }
 };
 
@@ -93,48 +142,27 @@ var slideFour = function (){
   if (state.slideNumber==4) {
     $("#slide-text").text("In 2013, facing a $304 million budget deficit, the School Reform commission closed 23 public schools, or about 10% of the city's total. Schools opened with greatly diminished capacity, in some cases, without full-time guidance counselors, assistant principals, lunch aides, and librarians.");
     map.removeLayer(filteredLayer);
-    function onEachFeature(feature, layer) {
-      if (feature.properties.FACIL_NAME=="Washington, George (EL)") {
-        pop=layer.bindPopup("George Washington School, closed in 2013, had been in operation since the Civil War period. Its facility now houses Vare-Washington School.");
-        map.setView([39.933455, -75.152622], 15);
-      }
-    };
-    L.geoJSON(data, {
-      onEachFeature: onEachFeature
-    }).addTo(map);
-    pop.openPopup();
+    popLayer();
   }
 };
 
 //Slide five
 var slideFive = function (){
   if (state.slideNumber==5) {
-    $("#slide-text").text("This year, the School District announced plans to overhaul academics at 11 low-performing schools. The 2016-2017 School District budget presented a $1.3 billion deficit.");
+    document.getElementById("btn-next").style.visibility = "hidden"; //hide Next button on last slide
+    $("#slide-text").text("This year, the School District announced plans to overhaul academics at these 11 low-performing schools.");
+    map.removeLayer(popupLayer);
+    nameFilter("Bartram, John");
+    nameFilter("Franklin Benjamin HS");
+    nameFilter("Fels, Samuel");
+    nameFilter("Kensington Culinary Arts");
+    nameFilter("Overbrook High School");
+    nameFilter("Harding, Warren G.");
+    nameFilter("Hartranft, John F.");
+    nameFilter("Heston, Edward");
+    nameFilter("Marshall, John");
+    nameFilter("McDaniel, Delaplaine");
+    nameFilter("Blankenburg, Rudolph");
+    map.setView([39.963925, -75.161170], 12);
   }
 };
-
-
-$(function() {
-  $('#btn-prev').on('click', function() {
-    state.slideNumber=state.slideNumber-1; //count will decrease by one on button click
-    console.log(state.slideNumber);
-    slideOne();
-    slideTwo();
-    slideThree();
-    slideFour();
-    slideFive();
-  });
-});
-
-$(function() {
-    $('#btn-next').on('click', function() {
-      state.slideNumber=state.slideNumber+1; //count will increase by one on button click
-      console.log(state.slideNumber);
-      slideOne();
-      slideTwo();
-      slideThree();
-      slideFour();
-      slideFive();
-    });
-});
-});
